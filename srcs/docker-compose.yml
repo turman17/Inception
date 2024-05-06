@@ -1,0 +1,47 @@
+version: '3.5'
+
+volumes:
+  mariadb:
+    name: mariadb
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/yuriy/Documents/Github/Inception/srcs/requirements/mariadb
+      o: bind
+  wordpress:
+    name: wordpress
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/yuriy/Documents/Github/Inception/srcs/requirements/wordpress
+      o: bind
+
+services:
+  mariadb:
+    container_name: mariadb
+    image: mariadb
+    build: ./requirements/mariadb
+    expose:
+      - "3306"
+    env_file:
+      - ./.env
+    networks:
+      - docker-network
+    restart: always
+  wordpress:
+    container_name: wordpress
+    image: wordpress
+    build: ./requirements/wordpress
+    ports:
+      - "5050:80"
+    expose:
+      - "5050"
+    env_file:
+      - ./.env
+    networks:
+      - docker-network
+    restart: always
+
+networks:
+  docker-network:
+    driver: bridge
