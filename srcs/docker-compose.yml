@@ -1,47 +1,40 @@
-version: '3.5'
-
-volumes:
-  mariadb:
-    name: mariadb
-    driver: local
-    driver_opts:
-      type: none
-      device: /Users/yuriy/Documents/Github/Inception/srcs/requirements/mariadb
-      o: bind
-  wordpress:
-    name: wordpress
-    driver: local
-    driver_opts:
-      type: none
-      device: /Users/yuriy/Documents/Github/Inception/srcs/requirements/wordpress
-      o: bind
+version: '3.8'
 
 services:
   mariadb:
-    container_name: mariadb
-    image: mariadb
     build: ./requirements/mariadb
-    expose:
-      - "3306"
-    env_file:
-      - ./.env
-    networks:
-      - docker-network
-    restart: always
-  wordpress:
-    container_name: wordpress
-    image: wordpress
-    build: ./requirements/wordpress
+    env_file: ./.env
     ports:
-      - "5050:80"
-    expose:
-      - "5050"
-    env_file:
-      - ./.env
+      - "3306"
     networks:
-      - docker-network
-    restart: always
+      - webnet
+    restart: unless-stopped
+
+  wordpress:
+    build: ./requirements/wordpress
+    env_file: ./.env
+    depends_on:
+      - mariadb
+    container_name: wordpress-container
+    ports:
+      - "9000:9000"
+    networks:
+      - webnet
+    restart: on-failure
+
+  nginx:
+    build: ./requirements/nginx
+    env_file: ./.env
+    command: /bin/sh -c "nginx -g 'daemon off;'"
+    depends_on:
+      - wordpress
+    ports:
+      - "443:443"
+    networks:
+      - webnet
+    restart: on-failure
 
 networks:
-  docker-network:
+  webnet:
+    name: webnet
     driver: bridge

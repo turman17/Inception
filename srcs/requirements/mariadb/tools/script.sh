@@ -1,40 +1,30 @@
 #!/bin/bash
 
-# Check required variables
-if [ -z "$MYSQL_ROOT_PASSWORD" ] || [ -z "$DB" ] || [ -z "$MYSQL_MANAGER" ] || [ -z "$MYSQL_MANAGER_PASSWORD" ]; then
-  echo "Error: Environment variables not set."
-  exit 1
-fi
+# Wait for MariaDB to be ready
+for i in {1..30}; do
+    if mysqladmin ping -u root --password="$MYSQL_ROOT_PASSWORD" --silent; then
+        echo "MariaDB is up and running!"
+        break
+    fi
+    sleep 1
+done
 
-# Directory where the WordPress database should reside
-wordpress_db_dir="/var/lib/mysql/$DB"
-
-# Proceed if the directory does not exist
-if [ ! -d "$wordpress_db_dir" ]; then
-    # Start MariaDB service
-    service mariadb start || { echo "Failed to start MariaDB"; exit 1; }
-
-    # Wait until MariaDB is ready
-    while ! mysqladmin ping --silent; do
-        sleep 1
-    done
-
-    # Configure MariaDB
-    mysql -u root -p"$MYSQL_ROOT_PASSWORD" <<_EOF_
-        SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$MYSQL_ROOT_PASSWORD');
-        DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-        DROP DATABASE IF EXISTS test;
-        DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
-        CREATE DATABASE $DB;
-        CREATE USER '$MYSQL_MANAGER'@'%' IDENTIFIED BY '$MYSQL_MANAGER_PASSWORD';
-        GRANT ALL PRIVILEGES ON $DB.* TO '$MYSQL_MANAGER'@'%';
-        FLUSH PRIVILEGES;
-        exit
+echo "Hello world1"
+mysql -u root --password="$MYSQL_ROOT_PASSWORD" <<_EOF_
+SET PASSWORD FOR 'root'@'localhost' = '$MYSQL_ROOT_PASSWORD';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+DROP DATABASE IF EXISTS test;
+DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
+FLUSH PRIVILEGES;
 _EOF_
+echo "Hello world"
 
-    # Stop the MariaDB service
-    service mariadb stop || { echo "Failed to stop MariaDB"; exit 1; }
-fi
+mysql -u root --password="$MYSQL_ROOT_PASSWORD" <<_EOF_
+CREATE DATABASE IF NOT EXISTS $DB;
+CREATE USER IF NOT EXISTS '$MYSQL_MANAGER'@'%' IDENTIFIED BY '$MYSQL_MANAGER_PASSWORD';
+GRANT ALL PRIVILEGES ON $DB.* TO '$MYSQL_MANAGER'@'%';
+FLUSH PRIVILEGES;
+_EOF_
+echo "Hello world2"
 
-# Execute passed commands
-exec "$@"
+exec mysqld_safe

@@ -13,9 +13,10 @@ RUN apt-get update -y \
 RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
     && chmod +x wp-cli.phar \
     && mv wp-cli.phar /usr/local/bin/wp
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-COPY tools/wordpress.sh /bin/wordpress.sh
-COPY conf/www.conf /etc/php/7.4/fpm/pool.d/
+COPY tools/script.sh /bin/wordpress.sh
+COPY tools/www.conf /etc/php/7.4/fpm/pool.d/
 
 RUN chmod +x /bin/wordpress.sh
 
@@ -24,6 +25,6 @@ RUN export PATH="$PATH:/usr/sbin" \
 
 EXPOSE 9000
 
-ENTRYPOINT ["/bin/wordpress.sh"]
+ENTRYPOINT [ "wordpress.sh" ]
 
-CMD ["php-fpm7.4", "-F"]
+CMD [ "php-fpm7.4" , "-F" ]

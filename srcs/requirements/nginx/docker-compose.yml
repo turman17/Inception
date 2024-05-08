@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  nginx:
+    build: .
+    env_file: ../../.env
+    ports:
+      - "443:443"
+    networks:
+      - webnet
+networks:
+  webnet:
+    driver: bridge
