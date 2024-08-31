@@ -1,40 +1,70 @@
-version: '3.8'
-
 services:
   mariadb:
+    container_name: mariadb-cont
+    image: mariadb
     build: ./requirements/mariadb
     env_file: ./.env
     ports:
       - "3306"
     networks:
-      - webnet
+      - docker-network
+    volumes:
+      - mariadb-vol:/var/lib/mysql/
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping"]
+      interval: 5s
+      timeout: 40s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
-
+    
   wordpress:
+    container_name: wordpress-cont
+    image: wordpress
     build: ./requirements/wordpress
     env_file: ./.env
-    depends_on:
-      - mariadb
-    container_name: wordpress-container
-    ports:
-      - "9000:9000"
     networks:
-      - webnet
-    restart: on-failure
+      - docker-network
+    expose:
+      - "9000"
+    volumes:
+      - wordpress-vol:/var/www/html/
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+        restart: true
 
   nginx:
-    build: ./requirements/nginx
-    env_file: ./.env
-    command: /bin/sh -c "nginx -g 'daemon off;'"
     depends_on:
       - wordpress
-    ports:
-      - "443:443"
+    container_name: nginx-cont
+    image: nginx
+    build: ./requirements/nginx
+    env_file: ./.env
     networks:
-      - webnet
-    restart: on-failure
+      - docker-network
+    ports: 
+      - "443:443"
+    volumes:
+      - wordpress-vol:/var/www/html/
+    restart: unless-stopped
+
+volumes:
+  mariadb-vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: "/home/parallels/data/mariadb"
+      o: 'bind'
+
+  wordpress-vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: "/home/parallels/data/wordpress"
+      o: 'bind'
 
 networks:
-  webnet:
-    name: webnet
-    driver: bridge
+  docker-network:
+    name: docker-network

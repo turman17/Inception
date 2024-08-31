@@ -1,24 +1,19 @@
-FROM debian:oldstable
+FROM debian:bullseye
 
-# Install MariaDB and utilities
-RUN apt-get update && apt-get install -y \
+# Install MariaDB server and netcat (nc)
+RUN apt-get update -y && apt-get install -y \
     mariadb-server \
-    net-tools \
-    procps \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /usr/local/bin
+# Copy the script to the container
+COPY tools/script.sh /bin/script.sh
 
-COPY tools/script.sh .
-RUN chmod +x script.sh
+# Make the script executable
+RUN chmod +x /bin/script.sh
 
-EXPOSE 3306
+# Set the entrypoint to your script
+ENTRYPOINT ["/bin/script.sh"]
 
-HEALTHCHECK --interval=30s --timeout=30s --retries=3 \
-    CMD mysqladmin --socket=/run/mysqld/mysqld.sock ping -h localhost || exit 1
-
-COPY tools/entrypoint.sh .
-RUN chmod +x entrypoint.sh
-
-ENTRYPOINT ["./entrypoint.sh"]
-CMD ["sh", "-c", "./script.sh && exec mysqld_safe"]
+# Default command to start MariaDB safely
+CMD ["mysqld_safe", "--bind-address=0.0.0.0"]
