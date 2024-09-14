@@ -18,10 +18,10 @@ shutdown:
 	@echo "\n\e[0;31mServers are down!\033[0m\n"
 
 mount_wordpress: 
-	@sudo mkdir -p /home/vboxuser/Documents/Inception/data/wordpress
+	@sudo mkdir -p /home/vboxuser/data/wordpress
 
 mount_mariadb:
-	@sudo mkdir -p /home/vboxuser/Documents/Inception/data/mariadb
+	@sudo mkdir -p /home/vboxuser/data/mariadb
 
 fclean:
 	@if [ "$(IS_DOMAIN_SETUP)" -gt 0 ]; then \
