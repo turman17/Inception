@@ -10,18 +10,18 @@ all: mount_wordpress mount_mariadb up
 	fi
 
 up:
-	@docker-compose -f srcs/docker-compose.yml up --build --detach
+	@docker compose -f srcs/docker-compose.yml up --build --detach
 	@echo "\n\e[0;32mServers are up!\033[0m\n"
 
 shutdown:
-	@docker-compose -f srcs/docker-compose.yml down
+	@docker compose -f srcs/docker-compose.yml down
 	@echo "\n\e[0;31mServers are down!\033[0m\n"
 
 mount_wordpress: 
-	@sudo mkdir -p /home/parallels/data/wordpress
+	@sudo mkdir -p /home/vboxuser/Documents/Inception/data/wordpress
 
 mount_mariadb:
-	@sudo mkdir -p /home/parallels/data/mariadb
+	@sudo mkdir -p /home/vboxuser/Documents/Inception/data/mariadb
 
 fclean:
 	@if [ "$(IS_DOMAIN_SETUP)" -gt 0 ]; then \
@@ -36,9 +36,10 @@ fclean:
 	docker network rm docker-network >/dev/null 2>&1; \
 	fi
 	@docker volume ls -q | xargs -r docker volume rm >/dev/null 2>&1
-	@sudo rm -rf /home/parallels/data
-	@echo "\n\\e[0;31mFull clean complete!\033[0m\n"
+	@sudo rm -rf /home/vboxuser/Documents/Inception/data
+	@echo "\n\\e[0;31mFull clean completed!\033[0m\n"
 
 re: fclean all 
 
 .PHONY: fclean all up shutdown mount_mariadb mount_wordpress re 
+
