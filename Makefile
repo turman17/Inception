@@ -36,7 +36,7 @@ fclean:
 	docker network rm docker-network >/dev/null 2>&1; \
 	fi
 	@docker volume ls -q | xargs -r docker volume rm >/dev/null 2>&1
-	@sudo rm -rf /home/vboxuser/Documents/Inception/data
+	@sudo rm -rf /home/vboxuser/data
 	@echo "\n\\e[0;31mFull clean completed!\033[0m\n"
 
 re: fclean all 

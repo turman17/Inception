@@ -55,14 +55,14 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: "/home/vboxuser/Documents/Inception/data/mariadb"
+      device: "/home/vboxuser/data/mariadb"
       o: 'bind'
 
   wordpress-vol:
     driver: local
     driver_opts:
       type: none
-      device: "/home/vboxuser/Documents/Inception/data/wordpress"
+      device: "/home/vboxuser/data/mariadb"
       o: 'bind'
 
 networks:
